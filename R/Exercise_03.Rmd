@@ -3,4 +3,172 @@ title: "Exercise_03"
 output: html_document
 date: "2024-02-07"
 ---
+```{r message = FALSE, warning=FALSE}
+require(tidyverse)
+require(ggplot2)
+```
 
+```{r}
+link <- "https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/data-wrangling.csv"
+d <- read.csv(link, sep = ",", header = TRUE, stringsAsFactors = FALSE)
+```
+
+Step1-1
+```{r}
+d <- d %>%
+  mutate(BSD = Body_mass_male_mean/Body_mass_female_mean)
+```
+
+Step1-2
+```{r}
+d <- d %>%
+    mutate(sex_ratio = AdultMales/AdultFemale)
+```
+
+Step1-3
+```{r}
+d <- d %>%
+    mutate(DI = DayLength_km/(2*sqrt(HomeRange_km2/pi)))
+```
+
+Step1-4
+```{r}
+d_filter <- d %>%
+  filter(is.na(DayLength_km)==FALSE) %>%
+  filter(is.na(Move) == FALSE)
+
+```
+
+```{r}
+d_filter %>%
+    ggplot(aes(x = DayLength_km, y = Move)) +
+    geom_point()
+```
+To my eyes, the overall relationship between two variables are not apparent in the plot.
+
+```{r}
+byFamily <- group_by(d_filter, Family)
+s <- summarise(byFamily, n_cases = n(), avgDL = mean(DayLength_km, na.rm = TRUE),
+    avgM = mean(Move, na.rm = TRUE))
+s
+```
+
+```{r}
+s %>%
+    ggplot(aes(x = avgDL, y = avgM)) +
+    geom_point()
+```
+In this plot, however, by eyeballing, families that spend more time moving travel farther overall.
+
+```{r}
+d_filter %>%    
+  ggplot(aes(x = DayLength_km, y = Move, na.rm = TRUE)) +
+    geom_point()+
+    facet_wrap(~ Family)
+```
+Through this plot, within each family, by eyeballing, only within Family Atelidae, species that spend more time moving travel farther overall.
+In this process, I didn't transform any variables except for calculating means for each family. I tried to log the variables, but the plot doesn't seem to provide further useful information.
+
+Step 1-5
+If "between day range length and time group size" point to "day range length" and "group size," here are my results:
+```{r}
+d_filter_5 <- d %>%
+  filter(is.na(DayLength_km)==FALSE) %>%
+  filter(is.na(MeanGroupSize) == FALSE)
+```
+
+```{r}
+d_filter_5 %>%
+    ggplot(aes(x = DayLength_km, y = MeanGroupSize)) +
+    geom_point()
+```
+To my eyes, species that live in larger groups do travel farther overall. But statistically, I predict that the correlation may not be very strong.
+
+```{r}
+byFamily_5 <- group_by(d_filter_5, Family)
+s_5 <- summarise(byFamily_5, n_cases = n(), avgDL = mean(DayLength_km, na.rm = TRUE),
+    avgGS = mean(MeanGroupSize, na.rm = TRUE))
+s_5
+```
+
+```{r}
+s_5 %>%
+    ggplot(aes(x = avgDL, y = avgGS)) +
+    geom_point()
+
+```
+In this plot, by eyeballing, families that live in larger groups travel farther overall.
+
+```{r}
+d_filter_5 %>%    
+  ggplot(aes(x = DayLength_km, y = MeanGroupSize, na.rm = TRUE)) +
+    geom_point()+
+    facet_wrap(~ Family)
+```
+Within many families, species that live in larger groups travel farther overall. The ones with this relationship (visually) are Atelidae, Cebidae, Cercopithecidae, Hominidae and Pitheciidae. I don't see this relationship in Lemuridae. In other families, the sampling points are not enough for eyeballing.
+
+Step 1-6
+```{r}
+d_filter_6 <- d %>%
+  filter(is.na(Canine_Dimorphism)==FALSE) %>%
+  filter(is.na(BSD)==FALSE)
+```
+
+```{r}
+d_filter_6 %>%
+    ggplot(aes(x = BSD, y = Canine_Dimorphism)) +
+    geom_point()
+```
+To my eyes, species greater size dimorphism also show greater canine dimorphism overall.
+
+```{r}
+byFamily_6 <- group_by(d_filter_6, Family)
+s_6 <- summarise(byFamily_6, n_cases = n(), avgBSD = mean(BSD, na.rm = TRUE),
+    avgCD = mean(Canine_Dimorphism, na.rm = TRUE))
+s_6
+```
+
+```{r}
+s_6 %>%
+    ggplot(aes(x = avgBSD, y = avgCD)) +
+    geom_point()
+```
+In this plot, by eyeballing, families that have higher BSD have higher CD.
+
+```{r}
+d_filter_6 %>%    
+  ggplot(aes(x = BSD, y = Canine_Dimorphism, na.rm = TRUE)) +
+    geom_point()+
+    facet_wrap(~ Family)
+```
+Within Cebidae and Cercopithecidae, species that have higher BSD have higher CD. In Atelidae, species that have higher BSD have lower CD (the eyeballing could be unreliable). In other families, either the sampling points are not enough or no relationship is found.
+
+Step 1-7
+```{r}
+d <- d %>%
+  mutate(diet_strategy = case_when(Fruit > 50 ~ "frugivore",
+                                   Leaves > 50 ~ "folivore",
+                                   TRUE ~ "Omnivore"))
+```
+
+```{r}
+d %>%
+  ggplot(aes(x= diet_strategy, y = MeanGroupSize)) + geom_boxplot(na.rm = TRUE,
+    outlier.shape = NA) + theme(
+    axis.ticks.x = element_blank()) + geom_dotplot(binaxis = "y", stackdir = "center",
+    stackratio = 0.2, alpha = 0.3, dotsize = 0.5, color = NA, fill = "red", na.rm = TRUE) +
+    geom_rug(sides = "l")
+
+```
+I don't see that frugivore species live in larger groups than folivores in terms of overall group sizes. In terms of highest group sizes, frugivores have many group sizes that exceed largest group size in folivores.
+
+Step 1-8
+```{r}
+s_8 <- unite(d, Binomial, Genus, Species, sep = "_", remove = FALSE) %>%
+  select(Binomial, Family, Brain_Size_Species_Mean, Body_mass_male_mean) %>%
+  group_by(Family) %>%
+  summarise(avgBS = mean(Brain_Size_Species_Mean, na.rm = TRUE), avgMM = mean(Body_mass_male_mean, na.rm = TRUE)) %>%
+  arrange(avgBS)
+
+s_8
+```
