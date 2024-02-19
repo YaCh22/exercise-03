@@ -1,0 +1,111 @@
+---
+title: "Exercise_03"
+output: html_document
+date: "2024-02-07"
+---
+```{r message = FALSE, warning=FALSE}
+require(tidyverse)
+require(ggplot2)
+```
+
+Step 1
+```{r}
+load_dictionary <- function(filename) {
+  library(tidyverse)
+  link <- filename
+  return(read.csv(link, sep = ",", header = TRUE, stringsAsFactors = FALSE))
+}
+```
+
+```{r}
+valid_list <- load_dictionary("../data/collins-scrabble-words-2019.txt")
+str(valid_list)
+```
+
+```{r}
+solution_list <- load_dictionary("../data/google-10000-english-usa-no-swears.txt")
+str(valid_list)
+```
+
+Step 2
+```{r}
+solution_list <- intersect(solution_list, valid_list)
+```
+8336 words are in the updated solution_list vector. On the website instruction, Step 1 shows 8336 words already, but I got 
+
+Step 3
+```{r}
+pick_solution <- function(df) {
+  df1 <- subset(df, nchar(df[,1]) == 5)
+  df2 <- df1[sample(nrow(df1), 1), ]
+  return(strsplit(df2, "")[[1]])
+}
+```
+
+Bonus with two arguments:
+```{r}
+pick_solution <- function(df, n) {
+  df1 <- subset(df, nchar(df[,1]) == n)
+  df2 <- df1[sample(nrow(df1), 1), ]
+  #return(str_split(df2, ""))
+  return(strsplit(df2, "")[[1]])
+}
+```
+
+```{r}
+solution <- pick_solution(solution_list, 5)
+solution[5]
+```
+
+Step 4
+```{r}
+play_wordle <- function(solution, valid_list, num_guesses=6){
+  print(paste("You have", paste(num_guesses), "chances to guess a word of length 5"))
+  print(paste(c("Letters left: ", LETTERS), collapse=" "))
+    }
+```
+
+```{r}
+play_wordle <- function(solution, valid_list, num_guesses=6){
+  print(paste("You have", paste(num_guesses), "chances to guess a word of length 5"))
+  print(paste(c("Letters left: ", LETTERS), collapse=" "))
+  #guess <- readline("Enter guess number, then press <enter>: ")
+    }
+```
+
+
+```{r}
+play_wordle(solution, valid_list, num_guesses=6)
+```
+
+```{r}
+evaluate <- function(df) {
+  ####
+}
+```
+
+```{r}
+valid_check <- function() {
+  repeat {
+    ANSWER <- readline("Enter your guess here in upper case, then press <enter>: ")
+    if (ANSWER %in% valid_list[[1]] == TRUE) break
+  }
+  return(ANSWER)
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
