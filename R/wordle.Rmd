@@ -69,7 +69,8 @@ play_wordle <- function(solution, valid_list, num_guesses=6){
 play_wordle <- function(solution, valid_list, num_guesses=6){
   print(paste("You have", paste(num_guesses), "chances to guess a word of length 5"))
   print(paste(c("Letters left: ", LETTERS), collapse=" "))
-  #guess <- readline("Enter guess number, then press <enter>: ")
+  guess <- valid_check()
+  return(guess)
     }
 ```
 
@@ -79,8 +80,18 @@ play_wordle(solution, valid_list, num_guesses=6)
 ```
 
 ```{r}
-evaluate <- function(df) {
-  ####
+evaluate_guess <- function(df) {
+  df1<- strsplit(df, "")[[1]]
+  for (i in 1:length(df1)) {
+    if (df1[i] == solution[i]) {
+      df1[i] <- "*"
+    } else if (df1[i] %in% solution) {
+      df1[i] <- "+"
+    } else {
+      df1[i] <- "-"
+    }
+}
+  return(df1)
 }
 ```
 
@@ -94,9 +105,16 @@ valid_check <- function() {
 }
 ```
 
+```{r}
+answer <- "ABA"
+evaluate_guess(answer)
+```
 
+```{r}
+#answer <- valid_check()
+strsplit(answer, "")
 
-
+```
 
 
 
