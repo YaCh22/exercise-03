@@ -70,7 +70,8 @@ play_wordle <- function(solution, valid_list, num_guesses=6){
   print(paste("You have", paste(num_guesses), "chances to guess a word of length 5"))
   print(paste(c("Letters left: ", LETTERS), collapse=" "))
   guess <- valid_check()
-  return(guess)
+  result <- evaluate_guess(guess)
+  return(result)
     }
 ```
 
@@ -110,11 +111,6 @@ answer <- "ABA"
 evaluate_guess(answer)
 ```
 
-```{r}
-#answer <- valid_check()
-strsplit(answer, "")
-
-```
 
 
 
