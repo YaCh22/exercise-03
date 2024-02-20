@@ -4,6 +4,7 @@ output: html_document
 date: "2024-02-07"
 ---
 ```{r message = FALSE, warning=FALSE}
+require(dplyr)
 require(tidyverse)
 require(ggplot2)
 ```
@@ -58,30 +59,9 @@ solution[5]
 ```
 
 Step 4
+A helper function:
 ```{r}
-play_wordle <- function(solution, valid_list, num_guesses=6){
-  print(paste("You have", paste(num_guesses), "chances to guess a word of length 5"))
-  print(paste(c("Letters left: ", LETTERS), collapse=" "))
-    }
-```
-
-```{r}
-play_wordle <- function(solution, valid_list, num_guesses=6){
-  print(paste("You have", paste(num_guesses), "chances to guess a word of length 5"))
-  print(paste(c("Letters left: ", LETTERS), collapse=" "))
-  guess <- valid_check()
-  result <- evaluate_guess(guess)
-  return(result)
-    }
-```
-
-
-```{r}
-play_wordle(solution, valid_list, num_guesses=6)
-```
-
-```{r}
-evaluate_guess <- function(df) {
+evaluate_guess <- function(df, solution) {
   df1<- strsplit(df, "")[[1]]
   for (i in 1:length(df1)) {
     if (df1[i] == solution[i]) {
@@ -96,26 +76,46 @@ evaluate_guess <- function(df) {
 }
 ```
 
+Another helper function:
 ```{r}
-valid_check <- function() {
+valid_check <- function(valid) {
   repeat {
-    ANSWER <- readline("Enter your guess here in upper case, then press <enter>: ")
-    if (ANSWER %in% valid_list[[1]] == TRUE) break
+    ANSWER <- readline("Enter your guess here, then press <enter>: ")
+    if (toupper(ANSWER) %in% valid[[1]] == TRUE && nchar(ANSWER)==5) break
   }
-  return(ANSWER)
+  return(toupper(ANSWER))
 }
 ```
 
 ```{r}
-answer <- "ABA"
-evaluate_guess(answer)
+play_wordle <- function(s, v, num_guesses=6){
+  letter_bank <- LETTERS
+  History <- c("History:")
+  for (i in 1:num_guesses) {
+  print(paste("You have", paste(num_guesses+1-i), "chances to guess a word of length 5"))
+  print(paste(c("Letters left: ", letter_bank), collapse=" "))
+  guess <- valid_check(v)
+  guess_letter <- strsplit(guess, "")[[1]]
+  result <- evaluate_guess(guess, s)
+  print(result)
+  History <- append(History, guess)
+  History <- append(History, result)
+  letter_bank <- setdiff(letter_bank, guess_letter)
+  if (setequal(result, c("*", "*", "*","*", "*"))==TRUE){
+    print("You won.")
+    break
+  } else if (i==6){
+    print("You lost.")
+  }
+  }
+  print(History)
+}
 ```
 
 
-
-
-
-
+```{r}
+play_wordle(solution, valid_list, num_guesses=6)
+```
 
 
 
